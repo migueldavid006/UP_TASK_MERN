@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import {autenticar, comprobarToken, confirmar, nuevoPassword, olvidePassword, perfil, registrar} from '../controllers/usuarioController.js'
-import cheackAuth from '../middleware/checkAuth.js'
+import checkAuth from '../middleware/checkAuth.js'
 // router.get('/', usuarios);
 // router.post('/', crearUsuario);
 
@@ -19,6 +19,6 @@ router.post('/olvide-password', olvidePassword);
 router.route('/olvide-password/:token').get(comprobarToken).post(nuevoPassword)
 
 // ------------------RUTAS PRIVADAS
-router.get('/perfil', cheackAuth , perfil)
+router.get('/perfil', checkAuth , perfil)
 
 export default router;
