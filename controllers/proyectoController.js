@@ -1,4 +1,5 @@
 import Proyecto from "../models/Proyecto.js";
+import Tarea from "../models/Tarea.js";
 
 const obtenerProyectos = async (req,res)=>{
     const proyectos = await Proyecto.find().where('creador').equals(req.usuario);
@@ -34,10 +35,15 @@ if(proyecto.creador.toString() !== req.usuario._id.toString())  {
         return res.status(401).json({msg: error.message});
 
 }
-
+    const tareas = await Tarea.find().where('proyecto').equals(proyecto._id);
+    res.json(tareas),
     // console.log(typeof proyecto.creador)
     // console.log(typeof req.usuario._id)
-    res.json(proyecto)
+
+    res.json({
+        proyecto,
+        tareas,
+    });
 
 };
 
@@ -99,12 +105,11 @@ const eliminarProyecto = async (req,res)=>{
 };
 
 // const agregarProyecto = async (req,res)=>{};
+const agregarrColaborador = async (req,res)=>{};
 
 const eliminarColaborador = async (req,res)=>{};
 
-const agregarrColaborador = async (req,res)=>{};
-
-const obtenerTareas = async (req,res)=>{};
+// const obtenerTareas = async (req,res)=>{};
 
 
 export {
@@ -116,5 +121,5 @@ export {
     // agregarProyecto,
     eliminarColaborador,
     agregarrColaborador,
-    obtenerTareas
+    // obtenerTareas
 };

@@ -1,6 +1,7 @@
 import Usuario from "../models/Usuario.js"
 import generarId from "../helpers/generarId.js";
 import generarJWT from "../helpers/generarJWT.js";
+import { emailRegistro, emailOlvidePassword} from '../helpers/emails.js'
 
 const registrar = async (req,res)=>{
 //evitar registros duplicados
@@ -17,10 +18,19 @@ try {
     const usuario = new Usuario(req.body)
     usuario.token = generarId();
 // ingrsando datos a la mase NO RELACIONAL MONGO DB
-    const usuarioAlmacenado = await usuario.save()
-    res.json({usuarioAlmacenado});
+    // const usuarioAlmacenado = await usuario.save()
+    await usuario.save();
+    // enviar el email de confirmacion
+    emailRegistro({
+        email: usuario.email,
+        nombre: usuario.nombre,
+        token: usuario.token,
+    })
 
-    console.log(usuario)
+    res.json({msg: ' Usuario Creado Correctamente, Revisa tu email para confirmar tu cuenta',
+    
+});
+
 } catch (error) {
     console.log(error)
 }
@@ -28,13 +38,18 @@ try {
 
 const autenticar = async (req,res) =>{
     const {email, password} = req.body;
-    // comprobar si el ususario existe 
-    const usuario = await Usuario.findOne({email})
-        // comprobar si el USARIO ESTA CONFIRMADO
-if(!usuario){
+
+     // comprobar si el ususario existe 
+    const usuario = await Usuario.findOne({email})  
+    if(!usuario){
     const error = new Error('el Usuario No Existe');
+    return res.status(404).json({msg: error.message});
+    }
+    //comprobar si el usuario esta confirmado
+    if(!usuario.confirmado){
+    const error = new Error('tu cuenta no ha sido confirmada');
     return res.status(403).json({msg: error.message});
-}
+    }
 
     //COMPROBAR PAswoord
     if(await usuario.comprobarPassword(password)){
@@ -51,7 +66,6 @@ if(!usuario){
 };
 
 const confirmar = async (req,res) =>{
-
     const {token} = req.params;
     const usuarioConfirmar = await Usuario.findOne({ token});
     if(!usuarioConfirmar){
@@ -83,8 +97,18 @@ const olvidePassword = async (req,res) =>{
 try {
     usuario.token = generarId();
     await usuario.save();
+// ENVIAR em@il
+emailOlvidePassword({
+    email: usuario.email,
+    nombre: usuario.nombre,
+    token: usuario.token,
+})
+
+
+
     res.json({msg:" hemos enviado un email con las instrucciones "})
-    } catch (error) {
+  
+} catch (error) {
         console.log(error)
     }
 };
